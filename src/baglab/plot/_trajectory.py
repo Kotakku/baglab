@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
-def xy_trajectory(
+def plot_xy_trajectory(
     x: pd.Series | np.ndarray,
     y: pd.Series | np.ndarray,
     ref_x: pd.Series | np.ndarray | None = None,
