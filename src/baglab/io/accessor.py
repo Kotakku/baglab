@@ -56,6 +56,9 @@ class FieldGroup:
     def __repr__(self) -> str:
         return f"FieldGroup('{self._prefix}', fields={self._matching})"
 
+    def _repr_html_(self) -> str:
+        return self.df._repr_html_()
+
 
 @pd.api.extensions.register_dataframe_accessor("msg")
 class MsgAccessor:
