@@ -307,6 +307,18 @@ class Bag:
         n = len(self._topics)
         return f"Bag('{self._path}', {n} topics)"
 
+    def _repr_html_(self) -> str:
+        rows = "".join(
+            f"<tr><td><code>{topic}</code></td><td>{msgtype}</td></tr>"
+            for topic, msgtype in sorted(self._topics.items())
+        )
+        return (
+            f"<strong>Bag</strong>: {self._path.name} "
+            f"({len(self._topics)} topics)"
+            f"<table><thead><tr><th>Topic</th><th>Type</th></tr></thead>"
+            f"<tbody>{rows}</tbody></table>"
+        )
+
 
 def load(
     path: str | Path,
