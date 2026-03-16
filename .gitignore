@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# pytest
+.pytest_cache/
+
+# baglab cache
+.baglab_cache/
+
+# Generated plots
+*.png
+
+# IDE
+.vscode/
+.idea/
+
+# venv
+.venv/
+
+# mkdocs
+site/

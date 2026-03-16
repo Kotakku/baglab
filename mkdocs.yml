@@ -1,0 +1,67 @@
+site_name: baglab
+site_url: https://kotakku.github.io/baglab/
+site_description: ROS2 rosbag data analysis library
+repo_url: https://github.com/Kotakku/baglab
+repo_name: Kotakku/baglab
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.snippets:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: false
+            show_root_heading: true
+            members_order: source
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - User Guide:
+      - I/O & Bag Loading: guide/io.md
+      - Geometry: guide/geometry.md
+      - Signal Processing: guide/signal.md
+      - Statistics: guide/stats.md
+      - Analysis: guide/analysis.md
+      - Diagnostics: guide/diagnostics.md
+      - Plotting: guide/plot.md
+  - API Reference:
+      - baglab.io: api/io.md
+      - baglab.geometry: api/geometry.md
+      - baglab.signal: api/signal.md
+      - baglab.stats: api/stats.md
+      - baglab.analysis: api/analysis.md
+      - baglab.diagnostics: api/diagnostics.md
+      - baglab.plot: api/plot.md

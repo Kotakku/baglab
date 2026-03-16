@@ -1,0 +1,3 @@
+# baglab.geometry
+
+::: baglab.geometry

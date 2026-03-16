@@ -1,0 +1,3 @@
+# baglab.diagnostics
+
+::: baglab.diagnostics
