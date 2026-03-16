@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
-def step_response_plot(
+def plot_step_response(
     t: pd.Series | np.ndarray,
     actual: pd.Series | np.ndarray,
     target: float | pd.Series | np.ndarray,

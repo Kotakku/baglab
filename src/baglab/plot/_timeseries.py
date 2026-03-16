@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
-def timeseries(
+def plot_timeseries(
     t: pd.Series | np.ndarray,
     *series: pd.Series | np.ndarray,
     labels: list[str] | None = None,

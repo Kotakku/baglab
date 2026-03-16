@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
-def error_band(
+def plot_error_band(
     t: pd.Series | np.ndarray,
     error: pd.Series | np.ndarray,
     sigma: float | None = None,
