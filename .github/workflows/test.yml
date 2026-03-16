@@ -22,11 +22,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y python3-pip
-          pip install -e ".[dev]"
+        run: uv sync --extra dev
 
       - name: Run tests
-        run: pytest
+        run: uv run pytest
