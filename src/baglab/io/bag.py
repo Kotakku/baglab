@@ -11,6 +11,11 @@ from typing import Sequence
 
 import pandas as pd
 import yaml
+
+try:
+    _YamlLoader = yaml.CSafeLoader  # type: ignore[attr-defined]
+except AttributeError:
+    _YamlLoader = yaml.SafeLoader  # type: ignore[assignment]
 from rosbags.dataframe import get_dataframe
 from rosbags.highlevel import AnyReader
 from rosbags.interfaces import Nodetype
@@ -21,6 +26,66 @@ from baglab.io.typesys import register_msg_types
 _log = logging.getLogger(__name__)
 _CACHE_DIR = ".baglab_cache"
 _CACHE_VERSION = 1
+_mcap_patched = False
+
+
+_SUPPORTED_ENCODINGS = {"ros2msg"}
+
+
+class _FilteredSchemas(dict):
+    """Dict subclass that hides schemas with unsupported encoding.
+
+    rosbags' McapReader.open() iterates ``self.schemas.values()`` to build
+    message definitions.  Schemas with empty or unsupported encodings (e.g.
+    ``ros2idl``) cause errors.  By filtering them out of ``values()``,
+    the affected channels fall back to ``MessageDefinitionFormat.NONE``.
+    """
+
+    def values(self):  # type: ignore[override]
+        return [v for v in super().values() if v.encoding in _SUPPORTED_ENCODINGS]
+
+
+def _patch_rosbags() -> None:
+    """Patch rosbags to filter unsupported schemas and speed up QoS parsing."""
+    global _mcap_patched  # noqa: PLW0603
+    if _mcap_patched:
+        return
+    _mcap_patched = True
+
+    # --- Filter unsupported schema encodings ---
+    try:
+        from rosbags.rosbag2 import storage_mcap  # noqa: PLC0415
+
+        _orig_init = storage_mcap.McapReader.__init__
+
+        def _patched_init(self: object, *args: object, **kwargs: object) -> None:
+            _orig_init(self, *args, **kwargs)
+            self.schemas = _FilteredSchemas()  # type: ignore[attr-defined]
+
+        storage_mcap.McapReader.__init__ = _patched_init  # type: ignore[assignment]
+    except Exception:
+        _log.debug("Failed to patch McapReader schema filter", exc_info=True)
+
+    # --- Speed up QoS parsing (ruamel.yaml → yaml.CSafeLoader) ---
+    try:
+        from rosbags.rosbag2 import metadata as _meta  # noqa: PLC0415
+
+        _orig_parse_qos = _meta.parse_qos
+
+        def _fast_parse_qos(dcts: list | str) -> list:
+            if not dcts:
+                return []
+            if isinstance(dcts, str):
+                dcts = yaml.load(dcts, _YamlLoader)
+            return _orig_parse_qos(dcts)
+
+        # Patch both module-level attribute and already-imported references
+        _meta.parse_qos = _fast_parse_qos  # type: ignore[assignment]
+        from rosbags.rosbag2 import reader as _reader  # noqa: PLC0415
+        _reader.parse_qos = _fast_parse_qos  # type: ignore[attr-defined]
+        storage_mcap.parse_qos = _fast_parse_qos  # type: ignore[attr-defined]
+    except Exception:
+        _log.debug("Failed to patch parse_qos", exc_info=True)
 
 
 def _topic_to_filename(topic: str) -> str:
@@ -45,40 +110,34 @@ def _compute_fingerprint(bag_path: Path) -> dict[str, dict]:
     return result
 
 
-def _fix_metadata(path: Path) -> None:
-    """Fix empty storage_identifier in metadata.yaml by detecting from file extensions."""
-    meta_path = path / "metadata.yaml"
-    if not meta_path.exists():
-        return
-
-    with open(meta_path) as f:
-        meta = yaml.safe_load(f)
-
-    info = meta.get("rosbag2_bagfile_information", {})
-    if info.get("storage_identifier", ""):
-        return
-
-    # Auto-detect from file extensions
-    rel_paths = info.get("relative_file_paths", [])
-    extensions = {Path(p).suffix for p in rel_paths}
-    if extensions == {".db3"}:
-        info["storage_identifier"] = "sqlite3"
-    elif extensions == {".mcap"}:
-        info["storage_identifier"] = "mcap"
-    else:
-        return
-
-    with open(meta_path, "w") as f:
-        yaml.dump(meta, f, default_flow_style=False, sort_keys=False)
-
-
-def _parse_topics(path: Path) -> dict[str, str]:
-    """Parse ``{topic_name: message_type}`` from metadata.yaml (no reader needed)."""
+def _load_metadata(path: Path) -> dict:
+    """Load and return the parsed metadata.yaml content, fixing it if needed."""
     meta_path = path / "metadata.yaml"
     if not meta_path.exists():
         return {}
+
     with open(meta_path) as f:
-        meta = yaml.safe_load(f)
+        meta = yaml.load(f, _YamlLoader)
+
+    # Fix empty storage_identifier by detecting from file extensions
+    info = meta.get("rosbag2_bagfile_information", {})
+    if not info.get("storage_identifier", ""):
+        rel_paths = info.get("relative_file_paths", [])
+        extensions = {Path(p).suffix for p in rel_paths}
+        if extensions == {".db3"}:
+            info["storage_identifier"] = "sqlite3"
+        elif extensions == {".mcap"}:
+            info["storage_identifier"] = "mcap"
+
+        if info.get("storage_identifier", ""):
+            with open(meta_path, "w") as f:
+                yaml.dump(meta, f, default_flow_style=False, sort_keys=False)
+
+    return meta
+
+
+def _parse_topics(meta: dict) -> dict[str, str]:
+    """Extract ``{topic_name: message_type}`` from parsed metadata."""
     topics_info = (
         meta.get("rosbag2_bagfile_information", {})
         .get("topics_with_message_count", [])
@@ -89,13 +148,8 @@ def _parse_topics(path: Path) -> dict[str, str]:
     }
 
 
-def _needs_typestore(path: Path) -> bool:
+def _needs_typestore(meta: dict) -> bool:
     """Check if the bag uses sqlite3 storage (which has no embedded type definitions)."""
-    meta_path = path / "metadata.yaml"
-    if not meta_path.exists():
-        return False
-    with open(meta_path) as f:
-        meta = yaml.safe_load(f)
     return meta.get("rosbag2_bagfile_information", {}).get("storage_identifier") == "sqlite3"
 
 
@@ -109,13 +163,16 @@ class Bag:
 
     """
 
-    def __init__(self, path: Path, msg_paths: Sequence[Path] = ()) -> None:
+    def __init__(
+        self, path: Path, msg_paths: Sequence[Path] = (), *, use_cache: bool = True
+    ) -> None:
         if not path.is_dir():
             raise FileNotFoundError(f"Bag directory not found: {path}")
         self._path = path
         self._msg_paths = list(msg_paths)
-        _fix_metadata(path)
-        self._topics = _parse_topics(path)
+        self._use_cache = use_cache
+        self._metadata = _load_metadata(path)
+        self._topics = _parse_topics(self._metadata)
         self._reader: AnyReader | None = None
         self._closed = False
         self._cache: dict[str, pd.DataFrame] = {}
@@ -123,13 +180,37 @@ class Bag:
     def _ensure_reader(self) -> AnyReader:
         """Open the AnyReader lazily on first use."""
         if self._reader is None:
-            typestore = get_typestore(Stores.LATEST) if _needs_typestore(self._path) else None
+            typestore = get_typestore(Stores.LATEST) if _needs_typestore(self._metadata) else None
             if typestore is not None:
                 for msg_path in self._msg_paths:
                     register_msg_types(typestore, msg_path)
+            _patch_rosbags()
             self._reader = AnyReader([self._path], default_typestore=typestore)
             self._reader.open()
+            self._warn_skipped_topics()
         return self._reader
+
+    def _warn_skipped_topics(self) -> None:
+        """Emit a warning listing topics skipped due to unsupported schema encoding."""
+        if self._reader is None:
+            return
+        import warnings  # noqa: PLC0415
+
+        from rosbags.interfaces import MessageDefinitionFormat  # noqa: PLC0415
+
+        skipped = sorted(
+            c.topic
+            for c in self._reader.connections
+            if c.msgdef.format == MessageDefinitionFormat.NONE
+        )
+        if skipped:
+            topics_str = "\n  ".join(skipped)
+            warnings.warn_explicit(
+                f"{len(skipped)} topic(s) skipped (unsupported schema encoding):\n  {topics_str}",
+                category=UserWarning,
+                filename="baglab",
+                lineno=0,
+            )
 
     @property
     def topics(self) -> dict[str, str]:
@@ -237,7 +318,7 @@ class Bag:
             return get_dataframe(reader, topic, keys)
 
         # Full-topic load: try disk cache first (no reader needed)
-        if self._is_cache_valid(topic):
+        if self._use_cache and self._is_cache_valid(topic):
             try:
                 df = self._read_cache(topic)
                 _log.debug("Loaded %s from cache", topic)
@@ -251,10 +332,11 @@ class Bag:
         all_keys = self._get_field_paths(msgtype)
         df = get_dataframe(reader, topic, all_keys)
 
-        try:
-            self._write_cache(topic, df)
-        except Exception:
-            _log.debug("Failed to write cache for %s", topic, exc_info=True)
+        if self._use_cache:
+            try:
+                self._write_cache(topic, df)
+            except Exception:
+                _log.debug("Failed to write cache for %s", topic, exc_info=True)
 
         return df
 
@@ -274,17 +356,12 @@ class Bag:
             topic, fields = key
             return self._load_topic(topic, list(fields))
 
+        if not self._use_cache:
+            return self._load_topic(key)
+
         if key not in self._cache:
             self._cache[key] = self._load_topic(key)
         return self._cache[key]
-
-    def clear_cache(self) -> None:
-        """Remove the Parquet disk cache directory."""
-        import shutil
-        cache_dir = self._path / _CACHE_DIR
-        if cache_dir.exists():
-            shutil.rmtree(cache_dir)
-        self._cache.clear()
 
     def close(self) -> None:
         """Close the underlying reader."""
@@ -324,6 +401,8 @@ def load(
     path: str | Path,
     topics: dict[str, list[str]] | None = None,
     msg_paths: Sequence[str | Path] = (),
+    *,
+    use_cache: bool = True,
 ) -> Bag:
     """Load a rosbag.
 
@@ -338,6 +417,9 @@ def load(
         Directories to scan for ``.msg`` files.  Required for db3 bags
         that use custom message types not included in the standard ROS2
         type definitions.  Shell notation is expanded.
+    use_cache : bool
+        If ``True`` (default), use disk cache for loaded DataFrames.
+        Set to ``False`` to always read from the bag file directly.
 
     Returns
     -------
@@ -350,8 +432,25 @@ def load(
     resolved_msg_paths = [
         Path(os.path.expandvars(os.path.expanduser(p))) for p in msg_paths
     ]
-    bag = Bag(path, msg_paths=resolved_msg_paths)
+    bag = Bag(path, msg_paths=resolved_msg_paths, use_cache=use_cache)
     if topics is not None:
         for topic, keys in topics.items():
             bag._cache[topic] = bag._load_topic(topic, keys)
     return bag
+
+
+def clear_cache(path: str | Path) -> None:
+    """Remove the disk cache for a rosbag.
+
+    Parameters
+    ----------
+    path : str | Path
+        Path to the rosbag directory. Shell notation (``~``, ``$VAR``) is expanded.
+
+    """
+    import shutil  # noqa: PLC0415
+
+    bag_path = Path(os.path.expandvars(os.path.expanduser(path)))
+    cache_dir = bag_path / _CACHE_DIR
+    if cache_dir.exists():
+        shutil.rmtree(cache_dir)
