@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 import baglab
-from baglab.io import Bag
+from baglab.io import Bag, clear_cache
 
 
 class TestLoad:
@@ -349,9 +349,8 @@ class TestParquetCache:
         _ = writable_bag["/test/twist"]
         cache_dir = writable_bag._path / ".baglab_cache"
         assert cache_dir.exists()
-        writable_bag.clear_cache()
+        clear_cache(writable_bag._path)
         assert not cache_dir.exists()
-        assert len(writable_bag._cache) == 0
 
     def test_field_selection_still_uncached(self, writable_bag):
         _ = writable_bag["/test/joint_state", ["position"]]
