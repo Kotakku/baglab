@@ -38,6 +38,8 @@ jobs:
             python3-pybind11 \
             ros-${{ matrix.ros_distro }}-rosbag2-cpp \
             ros-${{ matrix.ros_distro }}-rosbag2-storage \
+            ros-${{ matrix.ros_distro }}-rosbag2-storage-default-plugins \
+            ros-${{ matrix.ros_distro }}-rosbag2-storage-mcap \
             ros-${{ matrix.ros_distro }}-rcpputils \
             ros-${{ matrix.ros_distro }}-rmw \
             ros-${{ matrix.ros_distro }}-rcutils \
