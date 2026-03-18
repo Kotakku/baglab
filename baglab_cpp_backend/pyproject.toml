@@ -1,0 +1,16 @@
+[project]
+name = "baglab-cpp-backend"
+version = "0.1.0"
+description = "C++ acceleration backend for baglab"
+requires-python = ">=3.10"
+dependencies = ["numpy"]
+
+[build-system]
+requires = ["scikit-build-core", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+cmake.version = ">=3.22"
+wheel.packages = ["src/baglab_cpp_backend"]
+editable.rebuild = true
+build-dir = "build/{wheel_tag}"
