@@ -12,5 +12,4 @@ build-backend = "scikit_build_core.build"
 [tool.scikit-build]
 cmake.version = ">=3.22"
 wheel.packages = ["src/baglab_cpp_backend"]
-editable.rebuild = true
-build-dir = "build/{wheel_tag}"
+wheel.install-dir = "."
