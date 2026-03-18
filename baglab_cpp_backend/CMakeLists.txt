@@ -12,6 +12,7 @@ endif()
 
 if(ament_cmake_FOUND)
     # --- colcon build path ---
+    set(BAGLAB_USE_AMENT ON)
     find_package(ament_cmake_python REQUIRED)
     find_package(python_cmake_module REQUIRED)
     find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
@@ -19,9 +20,12 @@ if(ament_cmake_FOUND)
     find_package(pybind11 REQUIRED)
 else()
     # --- pip install path (scikit-build-core) ---
+    set(BAGLAB_USE_AMENT OFF)
     list(APPEND CMAKE_PREFIX_PATH $ENV{AMENT_PREFIX_PATH})
     find_package(pybind11 REQUIRED)
 endif()
+
+message(STATUS "BAGLAB_USE_AMENT: ${BAGLAB_USE_AMENT}")
 
 # ---- ROS 2 dependencies ----
 find_package(rosbag2_cpp REQUIRED)
@@ -66,7 +70,7 @@ target_link_libraries(_core PRIVATE
     rosidl_typesupport_cpp::rosidl_typesupport_cpp
 )
 
-if(ament_cmake_FOUND)
+if(BAGLAB_USE_AMENT)
     # colcon: install to ament Python site-packages
     ament_python_install_package(${PROJECT_NAME} PACKAGE_DIR src/baglab_cpp_backend)
     install(TARGETS _core LIBRARY DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}")
