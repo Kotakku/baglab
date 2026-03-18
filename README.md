@@ -34,31 +34,30 @@ pip install -e ".[dev]"
 
 ### C++ acceleration backend (optional)
 
-`baglab_cpp_backend` を追加すると、初回ロードがほぼI/O律速になります。
-ROS2環境が必要です。
+Installing `baglab_cpp_backend` enables near I/O-bound rosbag loading via rosbag2_cpp.
+Requires a sourced ROS2 environment.
 
 ```bash
-# ROS2環境をsource
 source /opt/ros/humble/setup.bash  # or jazzy
 
-# pip install (ROS2環境が必要)
+# Option 1: pip install
 cd baglab
 pip install scikit-build-core pybind11 numpy
 pip install --no-build-isolation ./baglab_cpp_backend
 
-# or colcon build
+# Option 2: colcon build
 colcon build --packages-select baglab_cpp_backend
 source install/setup.bash
 ```
 
-C++バックエンドがインストールされているかの確認:
+Check whether the backend is available:
 
 ```python
 import baglab
 print(baglab.has_cpp_backend())  # True / False
 ```
 
-インストールされていない場合でも、baglabは従来通り動作します（rosbags経由）。
+baglab works without the backend — it falls back to rosbags (pure Python).
 
 ## Usage
 
