@@ -183,6 +183,141 @@ class TestStampToSec:
         assert (result.diff().dropna() >= 0).all()
 
 
+class TestRecvTimeToSec:
+    """Tests for baglab.recv_time_to_sec()."""
+
+    def test_returns_series(self, bag):
+        df = bag["/test/joint_state"]
+        result = baglab.recv_time_to_sec(df)
+        assert isinstance(result, pd.Series)
+
+    def test_dtype_float64(self, bag):
+        df = bag["/test/joint_state"]
+        result = baglab.recv_time_to_sec(df)
+        assert result.dtype == "float64"
+
+    def test_values_are_positive(self, bag):
+        df = bag["/test/joint_state"]
+        result = baglab.recv_time_to_sec(df)
+        assert (result > 0).all()
+
+    def test_monotonically_increasing(self, bag):
+        df = bag["/test/joint_state"]
+        result = baglab.recv_time_to_sec(df)
+        assert (result.diff().dropna() >= 0).all()
+
+    def test_relative_starts_at_zero(self, bag):
+        df = bag["/test/joint_state"]
+        result = baglab.recv_time_to_sec(df, relative=True)
+        assert result.iloc[0] == pytest.approx(0.0)
+
+    def test_relative_values_small(self, bag):
+        df = bag["/test/joint_state"]
+        result = baglab.recv_time_to_sec(df, relative=True)
+        assert result.iloc[-1] < 10.0
+
+    def test_relative_monotonically_increasing(self, bag):
+        df = bag["/test/joint_state"]
+        result = baglab.recv_time_to_sec(df, relative=True)
+        assert (result.diff().dropna() >= 0).all()
+
+    def test_differs_from_stamp_to_sec(self, bag):
+        df = bag["/test/joint_state"]
+        recv = baglab.recv_time_to_sec(df)
+        stamp = baglab.stamp_to_sec(df)
+        assert not (recv == stamp).all()
+
+    def test_works_without_stamp_columns(self, bag):
+        df = bag["/test/twist"]
+        result = baglab.recv_time_to_sec(df, relative=True)
+        assert result.iloc[0] == pytest.approx(0.0)
+
+
+class TestAlignOrigin:
+    """Tests for baglab.align_origin()."""
+
+    def test_returns_tuple(self, bag):
+        df = bag["/test/joint_state"]
+        t1 = baglab.stamp_to_sec(df)
+        t2 = baglab.recv_time_to_sec(df)
+        result = baglab.align_origin(t1, t2)
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+
+    def test_earliest_starts_at_zero(self, bag):
+        df = bag["/test/joint_state"]
+        t1 = baglab.stamp_to_sec(df)
+        t2 = baglab.recv_time_to_sec(df)
+        r1, r2 = baglab.align_origin(t1, t2)
+        assert min(r1.iloc[0], r2.iloc[0]) == pytest.approx(0.0)
+
+    def test_relative_offsets_preserved(self, bag):
+        js = bag["/test/joint_state"]
+        tw = bag["/test/twist"]
+        t1 = baglab.stamp_to_sec(js)
+        t2 = baglab.stamp_to_sec(tw)
+        r1, r2 = baglab.align_origin(t1, t2)
+        # difference between first elements should be preserved
+        original_diff = t1.iloc[0] - t2.iloc[0]
+        aligned_diff = r1.iloc[0] - r2.iloc[0]
+        assert original_diff == pytest.approx(aligned_diff)
+
+    def test_single_series(self, bag):
+        df = bag["/test/joint_state"]
+        t = baglab.stamp_to_sec(df)
+        (r,) = baglab.align_origin(t)
+        assert r.iloc[0] == pytest.approx(0.0)
+
+    def test_empty_raises(self):
+        with pytest.raises(ValueError):
+            baglab.align_origin()
+
+
+class TestExplodeArray:
+    """Tests for baglab.explode_array()."""
+
+    def test_returns_dataframe(self, bag):
+        df = bag["/test/joint_state"]
+        result = baglab.explode_array(df.msg.position)
+        assert isinstance(result, pd.DataFrame)
+
+    def test_preserves_index(self, bag):
+        df = bag["/test/joint_state"]
+        result = baglab.explode_array(df.msg.position)
+        assert (result.index == df.index).all()
+
+    def test_column_count_matches_array_length(self, bag):
+        df = bag["/test/joint_state"]
+        result = baglab.explode_array(df.msg.position)
+        expected_len = len(df["position"].iloc[0])
+        assert result.shape[1] == expected_len
+
+    def test_custom_names(self, bag):
+        df = bag["/test/joint_state"]
+        n = len(df["position"].iloc[0])
+        names = [f"j{i}" for i in range(n)]
+        result = baglab.explode_array(df.msg.position, names=names)
+        assert list(result.columns) == names
+
+    def test_default_integer_names(self, bag):
+        df = bag["/test/joint_state"]
+        result = baglab.explode_array(df.msg.position)
+        assert all(isinstance(c, int) for c in result.columns)
+
+    def test_wrong_names_length_raises(self, bag):
+        df = bag["/test/joint_state"]
+        with pytest.raises(ValueError, match="names has"):
+            baglab.explode_array(df.msg.position, names=["a", "b"])
+
+    def test_values_match_original(self, bag):
+        df = bag["/test/joint_state"]
+        result = baglab.explode_array(df.msg.position)
+        for i in range(min(5, len(df))):
+            original = list(df["position"].iloc[i])
+            expanded = list(result.iloc[i])
+            assert original == expanded
+
+
 class TestReindexByStamp:
     """Tests for baglab.reindex_by_stamp()."""
 
