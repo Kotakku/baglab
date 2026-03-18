@@ -34,7 +34,6 @@ jobs:
         run: |
           apt-get update -qq
           apt-get install -y -qq \
-            python3-pip \
             ros-${{ matrix.ros_distro }}-rosbag2-cpp \
             ros-${{ matrix.ros_distro }}-rosbag2-storage \
             ros-${{ matrix.ros_distro }}-rcpputils \
@@ -45,16 +44,14 @@ jobs:
             ros-${{ matrix.ros_distro }}-rosidl-typesupport-introspection-cpp \
             ros-${{ matrix.ros_distro }}-rosidl-typesupport-cpp \
             ros-${{ matrix.ros_distro }}-sensor-msgs \
-            ros-${{ matrix.ros_distro }}-geometry-msgs \
-            python3-pybind11 \
-            python3-numpy
+            ros-${{ matrix.ros_distro }}-geometry-msgs
 
       - name: Build and install baglab_cpp_backend
         shell: bash
         run: |
           source /opt/ros/${{ matrix.ros_distro }}/setup.bash
-          pip3 install scikit-build-core pybind11
-          pip3 install --no-build-isolation ./baglab_cpp_backend
+          uv pip install scikit-build-core pybind11 numpy
+          uv pip install --no-build-isolation ./baglab_cpp_backend
 
       - name: Run tests with C++ backend
         shell: bash
