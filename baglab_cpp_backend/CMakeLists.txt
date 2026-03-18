@@ -5,8 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # ---- Detect build mode: colcon (ament_cmake) or pip (scikit-build-core) ----
-# SKBUILD is defined by scikit-build-core; when set, always use the pip path.
-if(NOT DEFINED SKBUILD)
+# SKBUILD_STATE is defined by scikit-build-core; when set, always use the pip path.
+if(NOT DEFINED SKBUILD_STATE)
     find_package(ament_cmake QUIET)
 endif()
 
