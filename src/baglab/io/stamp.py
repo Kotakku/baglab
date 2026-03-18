@@ -36,6 +36,59 @@ def stamp_to_sec(
     return t
 
 
+def recv_time_to_sec(
+    df: pd.DataFrame,
+    relative: bool = False,
+) -> pd.Series:
+    """Convert the DataFrame DatetimeIndex (rosbag receive time) to float seconds.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame with a DatetimeIndex produced by :func:`load`.
+    relative : bool
+        If True, return time relative to the first message (starting from 0).
+
+    Returns
+    -------
+    pd.Series
+        Receive timestamp in seconds as float64.
+
+    """
+    t = pd.Series(df.index.astype("int64") * 1e-9, index=df.index)
+    if relative:
+        t = t - t.iloc[0]
+    return t
+
+
+def align_origin(
+    *series: pd.Series,
+) -> tuple[pd.Series, ...]:
+    """Shift multiple time series so that the global minimum becomes 0.
+
+    Parameters
+    ----------
+    *series : pd.Series
+        Time series in absolute seconds (e.g. from :func:`stamp_to_sec` or
+        :func:`recv_time_to_sec`).
+
+    Returns
+    -------
+    tuple[pd.Series, ...]
+        Each input series shifted by the same shared origin.
+
+    Raises
+    ------
+    ValueError
+        If no series are provided.
+
+    """
+    if not series:
+        raise ValueError("At least one Series is required.")
+    t0 = min(s.iloc[0] for s in series)
+    return tuple(s - t0 for s in series)
+
+
 def reindex_by_stamp(df: pd.DataFrame) -> pd.DataFrame:
     """Replace index with header.stamp as DatetimeIndex.
 

@@ -2,7 +2,42 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 import pandas as pd
+
+
+def explode_array(
+    series: pd.Series,
+    names: Sequence[str] | None = None,
+) -> pd.DataFrame:
+    """Expand an array-valued Series into a DataFrame with one column per element.
+
+    Useful for ``sensor_msgs/JointState`` fields like ``position``,
+    ``velocity``, and ``effort`` where each cell contains a list.
+
+    Parameters
+    ----------
+    series : pd.Series
+        Series whose cells are lists or arrays of equal length.
+    names : sequence of str, optional
+        Column names for the resulting DataFrame.  If *None*, columns are
+        named ``0, 1, 2, ...``.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with the same index as *series*.
+
+    """
+    result = pd.DataFrame(series.to_list(), index=series.index)
+    if names is not None:
+        if len(names) != result.shape[1]:
+            raise ValueError(
+                f"names has {len(names)} elements but array has {result.shape[1]}"
+            )
+        result.columns = list(names)
+    return result
 
 
 class FieldGroup:
