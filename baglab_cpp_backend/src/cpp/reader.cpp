@@ -47,7 +47,11 @@ std::vector<RawMessage> read_raw_messages(
     while (reader.has_next()) {
         auto msg = reader.read_next();
         RawMessage raw;
+#ifdef BAGLAB_HAS_RECV_TIMESTAMP
+        raw.timestamp_ns = msg->recv_timestamp;
+#else
         raw.timestamp_ns = msg->time_stamp;
+#endif
         auto& ser = msg->serialized_data;
         raw.data.assign(
             ser->buffer,

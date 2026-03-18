@@ -43,6 +43,17 @@ pybind11_add_module(_core
 
 target_include_directories(_core PRIVATE src/cpp)
 
+# Detect Jazzy+ API change: time_stamp → recv_timestamp
+include(CheckCXXSourceCompiles)
+set(CMAKE_REQUIRED_INCLUDES ${rosbag2_storage_INCLUDE_DIRS})
+check_cxx_source_compiles("
+#include <rosbag2_storage/serialized_bag_message.hpp>
+int main() { rosbag2_storage::SerializedBagMessage m; (void)m.recv_timestamp; return 0; }
+" HAS_RECV_TIMESTAMP)
+if(HAS_RECV_TIMESTAMP)
+    target_compile_definitions(_core PRIVATE BAGLAB_HAS_RECV_TIMESTAMP)
+endif()
+
 target_link_libraries(_core PRIVATE
     rosbag2_cpp::rosbag2_cpp
     rosbag2_storage::rosbag2_storage
