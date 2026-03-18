@@ -13,6 +13,13 @@ ROS2 rosbag data analysis library. Load, explore, and visualize rosbag data with
 
 ## Installation
 
+### Prerequisites
+
+- Python 3.10+
+- ROS2 (Humble / Jazzy)
+
+### baglab (Python only)
+
 ```bash
 pip install baglab
 ```
@@ -25,10 +32,32 @@ cd baglab
 pip install -e ".[dev]"
 ```
 
-### Prerequisites
+### C++ acceleration backend (optional)
 
-- Python 3.10+
-- ROS2 (Humble / Jazzy)
+Installing `baglab_cpp_backend` enables near I/O-bound rosbag loading via rosbag2_cpp.
+Requires a sourced ROS2 environment.
+
+```bash
+source /opt/ros/humble/setup.bash  # or jazzy
+
+# Option 1: pip install
+cd baglab
+pip install scikit-build-core pybind11 numpy
+pip install --no-build-isolation ./baglab_cpp_backend
+
+# Option 2: colcon build
+colcon build --packages-select baglab_cpp_backend
+source install/setup.bash
+```
+
+Check whether the backend is available:
+
+```python
+import baglab
+print(baglab.has_cpp_backend())  # True / False
+```
+
+baglab works without the backend — it falls back to rosbags (pure Python).
 
 ## Usage
 

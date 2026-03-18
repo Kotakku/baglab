@@ -4,7 +4,7 @@ from baglab import plot as plot
 from baglab.plot import plot_error_band, plot_step_response, plot_timeseries, plot_xy_trajectory
 from baglab.analysis import delay_estimate, stepinfo, tracking_error
 from baglab.diagnostics import latency_chain, message_gaps, topic_delay, topic_rate
-from baglab.io import MsgAccessor, FieldGroup, align_origin, clear_cache, explode_array, find_time, load, recv_time_to_sec, reindex_by_stamp, stamp_to_sec, time_slice
+from baglab.io import MsgAccessor, FieldGroup, align_origin, clear_cache, explode_array, find_time, has_cpp_backend, load, recv_time_to_sec, reindex_by_stamp, stamp_to_sec, time_slice
 from baglab.signal import diff, fft, integrate, lowpass, moving_average
 from baglab.stats import describe, rms
 from baglab.geometry import (
@@ -41,6 +41,7 @@ __all__ = [
     "clear_cache",
     "explode_array",
     "find_time",
+    "has_cpp_backend",
     "load",
     "recv_time_to_sec",
     "reindex_by_stamp",

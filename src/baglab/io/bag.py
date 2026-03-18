@@ -23,6 +23,11 @@ from rosbags.typesys import Stores, get_typestore
 
 from baglab.io.typesys import register_msg_types
 
+try:
+    import baglab_cpp_backend as _cpp_backend
+except ImportError:
+    _cpp_backend = None  # type: ignore[assignment]
+
 _log = logging.getLogger(__name__)
 _CACHE_DIR = ".baglab_cache"
 _CACHE_VERSION = 1
@@ -30,6 +35,27 @@ _mcap_patched = False
 
 
 _SUPPORTED_ENCODINGS = {"ros2msg"}
+
+
+def has_cpp_backend() -> bool:
+    """Return True if the baglab-cpp acceleration package is installed."""
+    return _cpp_backend is not None
+
+
+def _cpp_read_to_dataframe(
+    bag_path: str,
+    topic: str,
+    field_paths: list[str] | None = None,
+) -> pd.DataFrame:
+    """Read a topic using the C++ backend and return a DataFrame."""
+    raw = _cpp_backend.read_topic(
+        bag_path, topic, field_paths if field_paths is not None else [])
+    timestamps = raw.pop("__timestamps__")
+    df = pd.DataFrame(raw, index=pd.to_datetime(timestamps, unit="ns"))
+    # Preserve requested column order when field_paths is specified
+    if field_paths is not None:
+        df = df[field_paths]
+    return df
 
 
 class _FilteredSchemas(dict):
@@ -314,6 +340,8 @@ class Bag:
 
         # Specific field selection — needs the reader, not disk-cached
         if keys is not None:
+            if _cpp_backend is not None:
+                return _cpp_read_to_dataframe(str(self._path), topic, keys)
             reader = self._ensure_reader()
             return get_dataframe(reader, topic, keys)
 
@@ -326,11 +354,14 @@ class Bag:
             except Exception:
                 _log.debug("Cache read failed for %s, falling back", topic)
 
-        # Cache miss — open the reader and load from bag
-        reader = self._ensure_reader()
-        msgtype = self._topics[topic]
-        all_keys = self._get_field_paths(msgtype)
-        df = get_dataframe(reader, topic, all_keys)
+        # Cache miss — load from bag
+        if _cpp_backend is not None:
+            df = _cpp_read_to_dataframe(str(self._path), topic)
+        else:
+            reader = self._ensure_reader()
+            msgtype = self._topics[topic]
+            all_keys = self._get_field_paths(msgtype)
+            df = get_dataframe(reader, topic, all_keys)
 
         if self._use_cache:
             try:

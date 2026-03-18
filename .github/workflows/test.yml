@@ -25,8 +25,43 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v6
 
-      - name: Install dependencies
-        run: uv sync --extra dev
+      - name: Install baglab and run tests
+        run: |
+          uv sync --extra dev
+          uv run pytest
 
-      - name: Run tests
-        run: uv run pytest
+      - name: Install C++ build dependencies
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq \
+            python3-colcon-common-extensions \
+            python3-pybind11 \
+            ros-${{ matrix.ros_distro }}-rosbag2-cpp \
+            ros-${{ matrix.ros_distro }}-rosbag2-storage \
+            ros-${{ matrix.ros_distro }}-rosbag2-storage-default-plugins \
+            ros-${{ matrix.ros_distro }}-rosbag2-storage-mcap \
+            ros-${{ matrix.ros_distro }}-rcpputils \
+            ros-${{ matrix.ros_distro }}-rmw \
+            ros-${{ matrix.ros_distro }}-rcutils \
+            ros-${{ matrix.ros_distro }}-rosidl-runtime-c \
+            ros-${{ matrix.ros_distro }}-rosidl-runtime-cpp \
+            ros-${{ matrix.ros_distro }}-rosidl-typesupport-introspection-cpp \
+            ros-${{ matrix.ros_distro }}-rosidl-typesupport-cpp \
+            ros-${{ matrix.ros_distro }}-pybind11-vendor \
+            ros-${{ matrix.ros_distro }}-python-cmake-module \
+            ros-${{ matrix.ros_distro }}-sensor-msgs \
+            ros-${{ matrix.ros_distro }}-geometry-msgs
+
+      - name: Build baglab_cpp_backend with colcon
+        shell: bash
+        run: |
+          source /opt/ros/${{ matrix.ros_distro }}/setup.bash
+          colcon build --paths baglab_cpp_backend
+
+      - name: Run tests with C++ backend
+        shell: bash
+        run: |
+          source /opt/ros/${{ matrix.ros_distro }}/setup.bash
+          source install/setup.bash
+          uv run python -c "import baglab; assert baglab.has_cpp_backend(), 'C++ backend not detected'"
+          uv run pytest -p no:launch_ros -p no:launch_testing
