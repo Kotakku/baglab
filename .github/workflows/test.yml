@@ -34,6 +34,7 @@ jobs:
         run: |
           apt-get update -qq
           apt-get install -y -qq \
+            python3-pip \
             ros-${{ matrix.ros_distro }}-rosbag2-cpp \
             ros-${{ matrix.ros_distro }}-rosbag2-storage \
             ros-${{ matrix.ros_distro }}-rcpputils \
@@ -52,7 +53,8 @@ jobs:
         shell: bash
         run: |
           source /opt/ros/${{ matrix.ros_distro }}/setup.bash
-          pip install --no-build-isolation ./baglab_cpp_backend
+          pip3 install scikit-build-core pybind11
+          pip3 install --no-build-isolation ./baglab_cpp_backend
 
       - name: Run tests with C++ backend
         shell: bash
