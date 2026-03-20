@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.3.0](https://github.com/Kotakku/baglab/compare/baglab-v0.2.1...baglab-v0.3.0) (2026-03-20)
+## [1.0.0](https://github.com/Kotakku/baglab/compare/baglab-v0.2.1...baglab-v1.0.0) (2026-03-20)
 
 
 ### Features

@@ -1,6 +1,6 @@
 [project]
 name = "baglab-mcap-backend"
-version = "0.3.0"
+version = "1.0.0"
 description = "MCAP C++ backend for baglab (no ROS 2 dependency)"
 requires-python = ">=3.10"
 dependencies = ["numpy"]

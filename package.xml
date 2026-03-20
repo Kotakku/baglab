@@ -3,7 +3,7 @@
   schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>baglab</name>
-  <version>0.3.0</version>
+  <version>1.0.0</version>
   <description>ROS2 rosbag data analysis library</description>
   <maintainer email="kotakkucu@gmail.com">Kotakku</maintainer>
   <license>Apache-2.0</license>
