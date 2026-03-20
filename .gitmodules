@@ -1,0 +1,3 @@
+[submodule "baglab_mcap_backend/third_party/mcap_repo"]
+	path = baglab_mcap_backend/third_party/mcap_repo
+	url = https://github.com/foxglove/mcap.git

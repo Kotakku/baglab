@@ -65,6 +65,117 @@ sliced = baglab.time_slice(df, t_start=1.0, t_end=5.0)
 idx = baglab.find_time(df, 3.5)
 ```
 
+## Backends
+
+baglab ships with two reading backends:
+
+| Backend | Formats | ROS 2 dependency | Speed |
+|---|---|---|---|
+| **mcap** (`baglab-mcap-backend`) | mcap | None | Fast |
+| **rosbags** (built-in) | mcap, db3 | None | Slow |
+
+### Default behavior
+
+With `backend="auto"` (the default), the backend is selected automatically:
+
+1. If `baglab-mcap-backend` is installed → **mcap**
+2. Otherwise → **rosbags**
+
+```python
+# Automatic selection (recommended)
+bag = baglab.load("path/to/rosbag")
+
+# Explicit selection
+bag = baglab.load("path/to/rosbag", backend="mcap")
+bag = baglab.load("path/to/rosbag", backend="rosbags")
+```
+
+### mcap backend
+
+A C++ backend specialized for the MCAP format. It uses the
+[foxglove/mcap](https://github.com/foxglove/mcap) C++ library and a
+custom CDR deserializer to achieve fast reading without any ROS 2 dependency.
+
+- Zero-copy I/O via mmap
+- Parses ros2msg schemas embedded in MCAP files directly (no rosidl needed)
+- Self-contained CDR (Common Data Representation) deserializer
+
+```bash
+# Installation
+sudo apt install liblz4-dev libzstd-dev
+pip install --no-build-isolation ./baglab_mcap_backend
+```
+
+```python
+print(baglab.has_mcap_backend())  # True / False
+```
+
+!!! note
+    The mcap backend only supports the `ros2msg` schema encoding.
+    Messages with `ros2idl` schemas will raise an error with a suggestion
+    to switch to the rosbags backend. All standard ROS 2 messages use
+    `ros2msg`, so this is rarely an issue in practice.
+
+### rosbags backend
+
+Uses the pure-Python [rosbags](https://gitlab.com/ternaris/rosbags) library.
+It supports both mcap and db3 formats and requires no additional installation.
+
+Use this backend when working with db3 bags or custom messages that
+only have `ros2idl` schema definitions.
+
+## Preload (batch reading)
+
+When reading multiple topics, **preload** can significantly speed up loading.
+With the mcap backend, all requested topics are read in a single pass
+through the file.
+
+### Via the `topics` argument of `load()`
+
+```python
+# Pass a list of topic names for batch reading
+bag = baglab.load("path/to/rosbag", topics=[
+    "/sensing/imu/imu_data",
+    "/vehicle/status/velocity_status",
+    "/localization/twist_estimator/twist_with_covariance",
+])
+
+# Subsequent access returns instantly from cache
+df = bag["/sensing/imu/imu_data"]
+```
+
+### Via `bag.preload()`
+
+```python
+bag = baglab.load("path/to/rosbag")
+
+# Batch-read topics once you know which ones you need
+bag.preload(["/topic_a", "/topic_b", "/topic_c"])
+
+# Preloaded topics return instantly; others are loaded on demand
+df_a = bag["/topic_a"]       # instant (preloaded)
+df_x = bag["/other_topic"]   # on-demand
+```
+
+!!! tip
+    Measured on a 20 GB bag with ~600 topics:
+
+    - **Sequential** (`bag[topic]` x 100): 5.2 s
+    - **Preload** (batch): 0.5 s (**10x faster**)
+
+    Use preload when working with many topics.
+
+### Dict form (field selection)
+
+The dict form is still supported. It loads only the specified fields
+per topic (does not use the single-pass batch scan).
+
+```python
+bag = baglab.load("path/to/rosbag", topics={
+    "/sensing/imu/imu_data": ["header.stamp.sec", "header.stamp.nanosec"],
+})
+```
+
 ## Custom message types (db3 bags)
 
 mcap bags embed `.msg` definitions inside the file, so custom types work
