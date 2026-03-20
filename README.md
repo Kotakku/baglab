@@ -32,29 +32,21 @@ cd baglab
 pip install -e ".[dev]"
 ```
 
-### C++ acceleration backend (optional)
+### MCAP acceleration backend (optional)
 
-Installing `baglab_cpp_backend` enables near I/O-bound rosbag loading via rosbag2_cpp.
-Requires a sourced ROS2 environment.
+Installing `baglab_mcap_backend` enables high-speed MCAP reading without ROS 2 dependency.
 
 ```bash
-source /opt/ros/humble/setup.bash  # or jazzy
-
-# Option 1: pip install
 cd baglab
-pip install scikit-build-core pybind11 numpy
-pip install --no-build-isolation ./baglab_cpp_backend
-
-# Option 2: colcon build
-colcon build --packages-select baglab_cpp_backend
-source install/setup.bash
+sudo apt install liblz4-dev libzstd-dev
+pip install --no-build-isolation ./baglab_mcap_backend
 ```
 
 Check whether the backend is available:
 
 ```python
 import baglab
-print(baglab.has_cpp_backend())  # True / False
+print(baglab.has_mcap_backend())  # True / False
 ```
 
 baglab works without the backend — it falls back to rosbags (pure Python).

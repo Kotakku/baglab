@@ -9,7 +9,7 @@ permissions:
   id-token: write
 
 jobs:
-  publish:
+  publish-baglab:
     runs-on: ubuntu-latest
     environment: pypi
     steps:
@@ -27,3 +27,49 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-mcap-backend:
+    runs-on: ubuntu-latest
+    environment: pypi
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build wheels with cibuildwheel
+        uses: pypa/cibuildwheel@v2.22
+        with:
+          package-dir: baglab_mcap_backend
+        env:
+          CIBW_BUILD: "cp310-manylinux_x86_64 cp311-manylinux_x86_64 cp312-manylinux_x86_64"
+          CIBW_BEFORE_ALL_LINUX: yum install -y lz4-devel libzstd-devel
+          CIBW_ENVIRONMENT: CMAKE_BUILD_PARALLEL_LEVEL=2
+
+      - name: Build sdist
+        run: pipx run build --sdist baglab_mcap_backend
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcap-backend-wheels
+          path: wheelhouse/*.whl
+
+      - name: Upload sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcap-backend-sdist
+          path: baglab_mcap_backend/dist/*.tar.gz
+
+      - name: Publish wheels to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: wheelhouse/
+
+      - name: Publish sdist to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: baglab_mcap_backend/dist/

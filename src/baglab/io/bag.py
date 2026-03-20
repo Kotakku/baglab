@@ -24,9 +24,9 @@ from rosbags.typesys import Stores, get_typestore
 from baglab.io.typesys import register_msg_types
 
 try:
-    import baglab_cpp_backend as _cpp_backend
+    import baglab_mcap_backend as _mcap_backend
 except ImportError:
-    _cpp_backend = None  # type: ignore[assignment]
+    _mcap_backend = None  # type: ignore[assignment]
 
 _log = logging.getLogger(__name__)
 _CACHE_DIR = ".baglab_cache"
@@ -37,22 +37,60 @@ _mcap_patched = False
 _SUPPORTED_ENCODINGS = {"ros2msg"}
 
 
-def has_cpp_backend() -> bool:
-    """Return True if the baglab-cpp acceleration package is installed."""
-    return _cpp_backend is not None
+class _MsgProxy:
+    """Lightweight proxy providing attribute access to flat dot-keyed dicts.
+
+    The mcap backend deserialises message sequences into dicts with flat
+    dot-notation keys (e.g. ``{"pose.position.x": 1.0, ...}``).  This
+    wrapper lets user code access them with the same ``pt.pose.position.x``
+    syntax used by rosbags message objects.
+    """
+
+    __slots__ = ("_data",)
+
+    def __init__(self, data: dict) -> None:
+        object.__setattr__(self, "_data", data)
+
+    def __getattr__(self, name: str):
+        data = object.__getattribute__(self, "_data")
+        if name in data:
+            return data[name]
+        prefix = name + "."
+        sub = {k[len(prefix):]: v for k, v in data.items() if k.startswith(prefix)}
+        if sub:
+            return _MsgProxy(sub)
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{name}'"
+        )
+
+    def __repr__(self) -> str:
+        data = object.__getattribute__(self, "_data")
+        return f"MsgProxy({data})"
 
 
-def _cpp_read_to_dataframe(
-    bag_path: str,
-    topic: str,
+def _wrap_msg_dicts(raw: dict) -> None:
+    """Wrap dicts inside message-sequence columns with :class:`_MsgProxy`."""
+    for key, values in raw.items():
+        if not isinstance(values, list) or len(values) == 0:
+            continue
+        sample = values[0]
+        if isinstance(sample, list) and len(sample) > 0 and isinstance(sample[0], dict):
+            raw[key] = [[_MsgProxy(d) for d in inner] for inner in values]
+
+
+def has_mcap_backend() -> bool:
+    """Return True if the baglab-mcap acceleration package is installed."""
+    return _mcap_backend is not None
+
+
+def _mcap_raw_to_dataframe(
+    raw: dict,
     field_paths: list[str] | None = None,
 ) -> pd.DataFrame:
-    """Read a topic using the C++ backend and return a DataFrame."""
-    raw = _cpp_backend.read_topic(
-        bag_path, topic, field_paths if field_paths is not None else [])
+    """Convert raw columnar dict from mcap backend to DataFrame."""
     timestamps = raw.pop("__timestamps__")
+    _wrap_msg_dicts(raw)
     df = pd.DataFrame(raw, index=pd.to_datetime(timestamps, unit="ns"))
-    # Preserve requested column order when field_paths is specified
     if field_paths is not None:
         df = df[field_paths]
     return df
@@ -190,18 +228,43 @@ class Bag:
     """
 
     def __init__(
-        self, path: Path, msg_paths: Sequence[Path] = (), *, use_cache: bool = True
+        self,
+        path: Path,
+        msg_paths: Sequence[Path] = (),
+        *,
+        use_cache: bool = True,
+        backend: str = "auto",
     ) -> None:
         if not path.is_dir():
             raise FileNotFoundError(f"Bag directory not found: {path}")
         self._path = path
         self._msg_paths = list(msg_paths)
         self._use_cache = use_cache
+        self._backend = self._resolve_backend(backend)
         self._metadata = _load_metadata(path)
         self._topics = _parse_topics(self._metadata)
         self._reader: AnyReader | None = None
+        self._mcap_reader = None  # BagReader instance (lazy)
         self._closed = False
         self._cache: dict[str, pd.DataFrame] = {}
+
+    @staticmethod
+    def _resolve_backend(backend: str) -> str:
+        """Resolve the backend to use."""
+        if backend == "auto":
+            if _mcap_backend is not None:
+                return "mcap"
+            return "rosbags"
+        if backend == "mcap":
+            if _mcap_backend is None:
+                raise ImportError(
+                    "baglab-mcap-backend is not installed. "
+                    "Install it with: pip install baglab-mcap-backend"
+                )
+            return "mcap"
+        if backend == "rosbags":
+            return "rosbags"
+        raise ValueError(f"Unknown backend: {backend!r}")
 
     def _ensure_reader(self) -> AnyReader:
         """Open the AnyReader lazily on first use."""
@@ -215,6 +278,12 @@ class Bag:
             self._reader.open()
             self._warn_skipped_topics()
         return self._reader
+
+    def _ensure_mcap_reader(self):
+        """Open the MCAP BagReader lazily on first use."""
+        if self._mcap_reader is None:
+            self._mcap_reader = _mcap_backend.BagReader(str(self._path))
+        return self._mcap_reader
 
     def _warn_skipped_topics(self) -> None:
         """Emit a warning listing topics skipped due to unsupported schema encoding."""
@@ -326,6 +395,49 @@ class Bag:
         }
         self._cache_meta_path(topic).write_text(json.dumps(meta, indent=2))
 
+    def preload(self, topic_names: list[str]) -> None:
+        """Batch-preload topics into the in-memory cache.
+
+        On the mcap backend this uses a single-pass read through the file,
+        which is much faster than reading topics one-by-one.
+        Other backends fall back to sequential loading.
+
+        Preloaded topics are returned instantly by ``bag[topic]``.
+
+        Parameters
+        ----------
+        topic_names : list[str]
+            Topic names to preload.
+
+        """
+        if self._backend == "mcap":
+            mcap_r = self._ensure_mcap_reader()
+            batch_raw = mcap_r.read_topics(topic_names, {})
+            for topic, raw in batch_raw.items():
+                try:
+                    df = _mcap_raw_to_dataframe(raw)
+                    self._cache[topic] = df
+                    if self._use_cache:
+                        try:
+                            self._write_cache(topic, df)
+                        except Exception:
+                            _log.debug("Failed to write cache for %s", topic, exc_info=True)
+                except Exception:
+                    _log.debug("Failed to build DataFrame for %s", topic, exc_info=True)
+        else:
+            # Fallback: sequential load
+            for topic in topic_names:
+                try:
+                    self._cache[topic] = self._load_topic(topic)
+                except Exception:
+                    _log.debug("Failed to load %s", topic, exc_info=True)
+
+    def _set_topic_attrs(self, df: pd.DataFrame, topic: str) -> pd.DataFrame:
+        """Attach topic metadata to the DataFrame."""
+        df.attrs["topic"] = topic
+        df.attrs["msg_type"] = self._topics.get(topic, "")
+        return df
+
     def _load_topic(
         self,
         topic: str,
@@ -340,23 +452,27 @@ class Bag:
 
         # Specific field selection — needs the reader, not disk-cached
         if keys is not None:
-            if _cpp_backend is not None:
-                return _cpp_read_to_dataframe(str(self._path), topic, keys)
+            if self._backend == "mcap":
+                mcap_r = self._ensure_mcap_reader()
+                raw = mcap_r.read_topic(topic, keys)
+                return self._set_topic_attrs(_mcap_raw_to_dataframe(raw, keys), topic)
             reader = self._ensure_reader()
-            return get_dataframe(reader, topic, keys)
+            return self._set_topic_attrs(get_dataframe(reader, topic, keys), topic)
 
         # Full-topic load: try disk cache first (no reader needed)
         if self._use_cache and self._is_cache_valid(topic):
             try:
                 df = self._read_cache(topic)
                 _log.debug("Loaded %s from cache", topic)
-                return df
+                return self._set_topic_attrs(df, topic)
             except Exception:
                 _log.debug("Cache read failed for %s, falling back", topic)
 
         # Cache miss — load from bag
-        if _cpp_backend is not None:
-            df = _cpp_read_to_dataframe(str(self._path), topic)
+        if self._backend == "mcap":
+            mcap_r = self._ensure_mcap_reader()
+            raw = mcap_r.read_topic(topic, [])
+            df = _mcap_raw_to_dataframe(raw)
         else:
             reader = self._ensure_reader()
             msgtype = self._topics[topic]
@@ -369,7 +485,7 @@ class Bag:
             except Exception:
                 _log.debug("Failed to write cache for %s", topic, exc_info=True)
 
-        return df
+        return self._set_topic_attrs(df, topic)
 
     def __getitem__(
         self,
@@ -387,11 +503,14 @@ class Bag:
             topic, fields = key
             return self._load_topic(topic, list(fields))
 
+        # Return preloaded data if available (regardless of use_cache setting)
+        if key in self._cache:
+            return self._cache[key]
+
         if not self._use_cache:
             return self._load_topic(key)
 
-        if key not in self._cache:
-            self._cache[key] = self._load_topic(key)
+        self._cache[key] = self._load_topic(key)
         return self._cache[key]
 
     def close(self) -> None:
@@ -400,6 +519,9 @@ class Bag:
             self._closed = True
             if self._reader is not None:
                 self._reader.close()
+            if self._mcap_reader is not None:
+                self._mcap_reader.close()
+                self._mcap_reader = None
             self._cache.clear()
 
     def __enter__(self) -> Bag:
@@ -430,10 +552,11 @@ class Bag:
 
 def load(
     path: str | Path,
-    topics: dict[str, list[str]] | None = None,
+    topics: Sequence[str] | dict[str, list[str]] | None = None,
     msg_paths: Sequence[str | Path] = (),
     *,
     use_cache: bool = True,
+    backend: str = "auto",
 ) -> Bag:
     """Load a rosbag.
 
@@ -441,8 +564,10 @@ def load(
     ----------
     path : str | Path
         Path to the rosbag directory. Shell notation (``~``, ``$VAR``) is expanded.
-    topics : dict[str, list[str]] | None
-        If given, eagerly load specified topics with their fields.
+    topics : list[str] | dict[str, list[str]] | None
+        If a list of topic names, eagerly preload all fields for those topics
+        in a single pass (fast batch read on mcap backend).
+        If a dict ``{topic: [fields]}``, eagerly load specified fields per topic.
         If ``None``, return a lazy :class:`Bag` handle.
     msg_paths : Sequence[str | Path]
         Directories to scan for ``.msg`` files.  Required for db3 bags
@@ -451,6 +576,9 @@ def load(
     use_cache : bool
         If ``True`` (default), use disk cache for loaded DataFrames.
         Set to ``False`` to always read from the bag file directly.
+    backend : str
+        Backend to use for reading: ``"auto"`` (default), ``"mcap"``,
+        or ``"rosbags"``.
 
     Returns
     -------
@@ -463,10 +591,15 @@ def load(
     resolved_msg_paths = [
         Path(os.path.expandvars(os.path.expanduser(p))) for p in msg_paths
     ]
-    bag = Bag(path, msg_paths=resolved_msg_paths, use_cache=use_cache)
+    bag = Bag(path, msg_paths=resolved_msg_paths, use_cache=use_cache, backend=backend)
     if topics is not None:
-        for topic, keys in topics.items():
-            bag._cache[topic] = bag._load_topic(topic, keys)
+        if isinstance(topics, dict):
+            # dict: per-topic field selection (sequential)
+            for topic, keys in topics.items():
+                bag._cache[topic] = bag._load_topic(topic, keys)
+        else:
+            # list: batch preload all fields
+            bag.preload(list(topics))
     return bag
 
 

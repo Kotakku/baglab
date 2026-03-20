@@ -499,3 +499,122 @@ class TestRepr:
         r = repr(bag)
         assert "Bag(" in r
         assert "2 topics" in r
+
+
+class TestBackendSelection:
+    """Tests for backend selection via load()."""
+
+    def test_auto_backend(self, test_bag_path):
+        bag = baglab.load(test_bag_path)
+        if baglab.has_mcap_backend():
+            assert bag._backend == "mcap"
+        else:
+            assert bag._backend == "rosbags"
+        bag.close()
+
+    def test_explicit_rosbags(self, test_bag_path):
+        bag = baglab.load(test_bag_path, backend="rosbags")
+        assert bag._backend == "rosbags"
+        df = bag["/test/twist"]
+        assert df.shape[0] > 0
+        bag.close()
+
+    @pytest.mark.skipif(
+        not baglab.has_mcap_backend(), reason="mcap backend not installed"
+    )
+    def test_explicit_mcap(self, test_bag_path):
+        bag = baglab.load(test_bag_path, backend="mcap")
+        assert bag._backend == "mcap"
+        df = bag["/test/twist"]
+        assert df.shape[0] > 0
+        bag.close()
+
+    def test_invalid_backend_raises(self, test_bag_path):
+        with pytest.raises(ValueError, match="Unknown backend"):
+            baglab.load(test_bag_path, backend="invalid")
+
+    @pytest.mark.skipif(
+        not baglab.has_mcap_backend(), reason="mcap backend not installed"
+    )
+    def test_mcap_matches_rosbags(self, test_bag_path):
+        """MCAP and rosbags backends should produce identical data."""
+        bag_m = baglab.load(test_bag_path, backend="mcap", use_cache=False)
+        bag_r = baglab.load(test_bag_path, backend="rosbags", use_cache=False)
+        for topic in bag_m.topics:
+            df_m = bag_m[topic]
+            df_r = bag_r[topic]
+            assert df_m.shape[0] == df_r.shape[0], f"Row mismatch on {topic}"
+            for col in df_m.columns:
+                if col not in df_r.columns:
+                    continue
+                try:
+                    import numpy as np
+                    m_vals = df_m[col].values.astype(float)
+                    r_vals = df_r[col].values.astype(float)
+                    assert np.allclose(m_vals, r_vals, atol=1e-10), (
+                        f"Value mismatch on {topic}.{col}"
+                    )
+                except (TypeError, ValueError):
+                    pass
+        bag_m.close()
+        bag_r.close()
+
+
+class TestPreload:
+    """Tests for batch preload via topics argument and bag.preload()."""
+
+    @pytest.mark.skipif(
+        not baglab.has_mcap_backend(), reason="mcap backend not installed"
+    )
+    def test_preload_via_topics_arg(self, test_bag_path):
+        bag = baglab.load(
+            test_bag_path,
+            topics=["/test/twist", "/test/joint_state"],
+            backend="mcap",
+            use_cache=False,
+        )
+        # Preloaded topics should be in cache
+        assert "/test/twist" in bag._cache
+        assert "/test/joint_state" in bag._cache
+        assert bag["/test/twist"].shape[0] > 0
+        bag.close()
+
+    @pytest.mark.skipif(
+        not baglab.has_mcap_backend(), reason="mcap backend not installed"
+    )
+    def test_preload_method(self, test_bag_path):
+        bag = baglab.load(test_bag_path, backend="mcap", use_cache=False)
+        bag.preload(["/test/twist"])
+        assert "/test/twist" in bag._cache
+        # On-demand access for non-preloaded topic still works
+        df = bag["/test/joint_state"]
+        assert df.shape[0] > 0
+        bag.close()
+
+    @pytest.mark.skipif(
+        not baglab.has_mcap_backend(), reason="mcap backend not installed"
+    )
+    def test_preload_matches_sequential(self, test_bag_path):
+        """Preloaded data should match sequentially loaded data."""
+        # Sequential
+        bag_s = baglab.load(test_bag_path, backend="mcap", use_cache=False)
+        df_s = bag_s["/test/twist"]
+        bag_s.close()
+        # Preloaded
+        bag_p = baglab.load(
+            test_bag_path,
+            topics=["/test/twist"],
+            backend="mcap",
+            use_cache=False,
+        )
+        df_p = bag_p["/test/twist"]
+        bag_p.close()
+        pd.testing.assert_frame_equal(df_s, df_p)
+
+    def test_preload_fallback_rosbags(self, test_bag_path):
+        """Preload should work with rosbags backend (sequential fallback)."""
+        bag = baglab.load(test_bag_path, backend="rosbags", use_cache=False)
+        bag.preload(["/test/twist"])
+        assert "/test/twist" in bag._cache
+        assert bag["/test/twist"].shape[0] > 0
+        bag.close()

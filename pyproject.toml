@@ -36,6 +36,9 @@ Repository = "https://github.com/Kotakku/baglab"
 Documentation = "https://kotakku.github.io/baglab/"
 
 [project.optional-dependencies]
+mcap = [
+    "baglab-mcap-backend",
+]
 dev = [
     "pytest",
 ]
@@ -46,6 +49,9 @@ docs = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.uv.sources]
+baglab-mcap-backend = { path = "baglab_mcap_backend", editable = true }
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
