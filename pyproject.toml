@@ -50,6 +50,9 @@ docs = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.uv.sources]
+baglab-mcap-backend = { path = "baglab_mcap_backend", editable = true }
+
 [tool.pytest.ini_options]
 testpaths = ["test"]
 addopts = "-p no:launch_testing_ros --ignore=test/test_rosbag_pkg"

@@ -36,7 +36,7 @@ wheels = [
 
 [[package]]
 name = "baglab"
-version = "0.1.0"
+version = "0.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "control" },
@@ -60,9 +60,13 @@ docs = [
     { name = "mkdocs-material" },
     { name = "mkdocstrings", extra = ["python"] },
 ]
+mcap = [
+    { name = "baglab-mcap-backend" },
+]
 
 [package.metadata]
 requires-dist = [
+    { name = "baglab-mcap-backend", marker = "extra == 'mcap'", editable = "baglab_mcap_backend" },
     { name = "control" },
     { name = "matplotlib" },
     { name = "mkdocs-material", marker = "extra == 'docs'" },
@@ -76,7 +80,19 @@ requires-dist = [
     { name = "rosbags-dataframe" },
     { name = "scipy" },
 ]
-provides-extras = ["dev", "docs"]
+provides-extras = ["mcap", "dev", "docs"]
+
+[[package]]
+name = "baglab-mcap-backend"
+version = "0.1.0"
+source = { editable = "baglab_mcap_backend" }
+dependencies = [
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.4.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "numpy" }]
 
 [[package]]
 name = "certifi"
