@@ -1,4 +1,37 @@
-"""baglab - ROS2 rosbag data analysis library."""
+"""baglab - ROS2 rosbag data analysis library.
+
+Quick start
+-----------
+
+Load a rosbag and access topic data as a pandas DataFrame::
+
+    import baglab
+
+    bag = baglab.load("path/to/rosbag")
+    df = bag["/cmd_vel"]                        # full topic (lazy, cached)
+    df = bag["/cmd_vel", ["twist.linear.x"]]    # field selection (not cached)
+
+Access nested message fields with dot notation::
+
+    vel = df.msg.twist.linear.x     # -> pd.Series
+    vel = df.msg.twist.linear.df    # -> pd.DataFrame with columns [x, y, z]
+
+Timestamp helpers::
+
+    t = baglab.stamp_to_sec(df, relative=True)  # header.stamp -> float seconds
+    t = baglab.recv_time_to_sec(df, relative=True)  # receive time -> float seconds
+
+    # align multiple topics to a common t=0
+    t1, t2 = baglab.align_origin(t1, t2)
+
+Batch preloading (single-pass read on mcap backend)::
+
+    bag = baglab.load("path/to/rosbag", topics=["/cmd_vel", "/odom"])
+
+Array field expansion (e.g. JointState)::
+
+    pos = baglab.explode_array(df["position"], names=["j1", "j2", "j3"])
+"""
 
 from baglab import plot as plot
 from baglab.plot import plot_error_band, plot_step_response, plot_timeseries, plot_xy_trajectory
