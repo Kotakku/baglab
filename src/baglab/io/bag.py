@@ -220,6 +220,16 @@ def _needs_typestore(meta: dict) -> bool:
 class Bag:
     """Rosbag handle with lazy per-topic DataFrame loading.
 
+    Use :func:`baglab.load` to create instances instead of calling this
+    constructor directly — ``load`` expands shell paths, preloads topics,
+    and selects the backend automatically.
+
+    Access topic data via subscript::
+
+        bag = baglab.load("path/to/rosbag")
+        df = bag["/cmd_vel"]                       # all fields, cached
+        df = bag["/cmd_vel", ["twist.linear.x"]]   # field selection, not cached
+
     Parameters
     ----------
     path : Path
@@ -585,6 +595,21 @@ def load(
     Bag
         A bag handle. When *topics* is provided, the requested
         DataFrames are pre-cached and accessible via ``bag[topic]``.
+
+    Examples
+    --------
+    Lazy loading (topics loaded on first access)::
+
+        bag = baglab.load("~/rosbags/experiment1")
+        df = bag["/cmd_vel"]
+
+    Eager batch preloading::
+
+        bag = baglab.load("~/rosbags/experiment1", topics=["/cmd_vel", "/odom"])
+
+    Field-selective loading::
+
+        bag = baglab.load("path", topics={"/imu": ["angular_velocity.x"]})
 
     """
     path = Path(os.path.expandvars(os.path.expanduser(path)))
