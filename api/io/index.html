@@ -1,0 +1,2846 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="ROS2 rosbag data analysis library">
+      
+      
+      
+        <link rel="canonical" href="https://kotakku.github.io/baglab/api/io/">
+      
+      
+        <link rel="prev" href="../../guide/plot/">
+      
+      
+        <link rel="next" href="../geometry/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>baglab.io - baglab</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#baglabio" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="baglab" class="md-header__button md-logo" aria-label="baglab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            baglab
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              baglab.io
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Kotakku/baglab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Kotakku/baglab
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="baglab" class="md-nav__button md-logo" aria-label="baglab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    baglab
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Kotakku/baglab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Kotakku/baglab
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    I/O & Bag Loading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/geometry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geometry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/signal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Signal Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/stats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Statistics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/plot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plotting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    baglab.io
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    baglab.io
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#baglab.io" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        io
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="io">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.FieldGroup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FieldGroup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FieldGroup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.FieldGroup.df" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        df
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.MsgAccessor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MsgAccessor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bag
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bag">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag.topics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        topics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag.preload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        preload
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="preload">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag.preload--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag.__getitem__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __getitem__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag.close" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        close
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.explode_array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        explode_array
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="explode_array">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.explode_array--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.explode_array--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.clear_cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clear_cache
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="clear_cache">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.clear_cache--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_bags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_bags
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="find_bags">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_bags--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_bags--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.has_mcap_backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        has_mcap_backend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.load" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="load">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.load--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.load--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.load--examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.align_origin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        align_origin
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="align_origin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.align_origin--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.align_origin--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.align_origin--raises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Raises
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_time
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="find_time">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_time--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_time--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_time--raises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Raises
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.recv_time_to_sec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        recv_time_to_sec
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="recv_time_to_sec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.recv_time_to_sec--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.recv_time_to_sec--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.reindex_by_stamp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reindex_by_stamp
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="reindex_by_stamp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.reindex_by_stamp--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.reindex_by_stamp--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.stamp_to_sec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stamp_to_sec
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="stamp_to_sec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.stamp_to_sec--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.stamp_to_sec--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.time_slice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        time_slice
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="time_slice">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.time_slice--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.time_slice--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.register_msg_types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        register_msg_types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="register_msg_types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.register_msg_types--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.register_msg_types--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../geometry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    baglab.geometry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../signal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    baglab.signal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    baglab.stats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    baglab.analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    baglab.diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    baglab.plot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#baglab.io" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        io
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="io">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.FieldGroup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FieldGroup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FieldGroup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.FieldGroup.df" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        df
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.MsgAccessor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MsgAccessor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bag
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bag">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag.topics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        topics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag.preload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        preload
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="preload">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag.preload--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag.__getitem__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __getitem__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.Bag.close" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        close
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.explode_array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        explode_array
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="explode_array">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.explode_array--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.explode_array--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.clear_cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clear_cache
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="clear_cache">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.clear_cache--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_bags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_bags
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="find_bags">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_bags--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_bags--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.has_mcap_backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        has_mcap_backend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.load" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="load">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.load--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.load--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.load--examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.align_origin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        align_origin
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="align_origin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.align_origin--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.align_origin--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.align_origin--raises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Raises
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_time
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="find_time">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_time--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_time--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.find_time--raises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Raises
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.recv_time_to_sec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        recv_time_to_sec
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="recv_time_to_sec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.recv_time_to_sec--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.recv_time_to_sec--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.reindex_by_stamp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reindex_by_stamp
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="reindex_by_stamp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.reindex_by_stamp--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.reindex_by_stamp--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.stamp_to_sec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stamp_to_sec
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="stamp_to_sec">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.stamp_to_sec--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.stamp_to_sec--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.time_slice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        time_slice
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="time_slice">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.time_slice--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.time_slice--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.register_msg_types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        register_msg_types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="register_msg_types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.register_msg_types--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baglab.io.register_msg_types--returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Returns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="baglabio">baglab.io<a class="headerlink" href="#baglabio" title="Permanent link">&para;</a></h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="baglab.io" class="doc doc-heading">
+            <code>baglab.io</code>
+
+
+<a href="#baglab.io" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+        <p>I/O module for rosbag loading, field access, and timestamp utilities.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="baglab.io.FieldGroup" class="doc doc-heading">
+            <code>FieldGroup</code>
+
+
+<a href="#baglab.io.FieldGroup" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Intermediate node for chained ROS2-style field access.</p>
+<p>Returned by :class:<code>MsgAccessor</code> attribute access.  Supports further
+chaining until a leaf (single column) is reached, at which point a
+:class:<code>~pandas.Series</code> is returned.</p>
+<p>Use the :attr:<code>df</code> property to obtain a :class:<code>~pandas.DataFrame</code>
+containing all columns under the current prefix, with the prefix
+stripped from column names.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="baglab.io.FieldGroup.df" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">df</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#baglab.io.FieldGroup.df" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return matching columns as a DataFrame with prefix stripped.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="baglab.io.MsgAccessor" class="doc doc-heading">
+            <code>MsgAccessor</code>
+
+
+<a href="#baglab.io.MsgAccessor" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>ROS2-style dot access for DataFrame columns.</p>
+<p>Registered as <code>df.msg</code>.  Supports chained attribute access
+mirroring ROS2 message field hierarchy::</p>
+<div class="highlight"><pre><span></span><code>df.msg.twist.linear.x   # → Series
+df.msg.twist.linear     # → FieldGroup
+df.msg.twist.linear.df  # → DataFrame with columns [x, y, z]
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="baglab.io.Bag" class="doc doc-heading">
+            <code>Bag</code>
+
+
+<a href="#baglab.io.Bag" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Rosbag handle with lazy per-topic DataFrame loading.</p>
+<p>Use :func:<code>baglab.load</code> to create instances instead of calling this
+constructor directly — <code>load</code> expands shell paths, preloads topics,
+and selects the backend automatically.</p>
+<p>Access topic data via subscript::</p>
+<div class="highlight"><pre><span></span><code>bag = baglab.load(&quot;path/to/rosbag&quot;)
+df = bag[&quot;/cmd_vel&quot;]                       # all fields, cached
+df = bag[&quot;/cmd_vel&quot;, [&quot;twist.linear.x&quot;]]   # field selection, not cached
+</code></pre></div>
+<h5 id="baglab.io.Bag--parameters">Parameters<a class="headerlink" href="#baglab.io.Bag--parameters" title="Permanent link">&para;</a></h5>
+<p>path : Path
+    Path to the rosbag directory.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="baglab.io.Bag.topics" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">topics</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#baglab.io.Bag.topics" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return <code>{topic_name: message_type}</code> mapping.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="baglab.io.Bag.preload" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">preload</span><span class="p">(</span><span class="n">topic_names</span><span class="p">)</span></code>
+
+<a href="#baglab.io.Bag.preload" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Batch-preload topics into the in-memory cache.</p>
+<p>On the mcap backend this uses a single-pass read through the file,
+which is much faster than reading topics one-by-one.
+Other backends fall back to sequential loading.</p>
+<p>Preloaded topics are returned instantly by <code>bag[topic]</code>.</p>
+<h6 id="baglab.io.Bag.preload--parameters">Parameters<a class="headerlink" href="#baglab.io.Bag.preload--parameters" title="Permanent link">&para;</a></h6>
+<p>topic_names : list[str]
+    Topic names to preload.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="baglab.io.Bag.__getitem__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__getitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></code>
+
+<a href="#baglab.io.Bag.__getitem__" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Access topic data with optional field selection.</p>
+<p>Usage::</p>
+<div class="highlight"><pre><span></span><code>bag[&quot;/motor/angle&quot;]              # all fields, cached
+bag[&quot;/motor/angle&quot;, [&quot;actual&quot;]]   # specific fields, not cached
+</code></pre></div>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="baglab.io.Bag.close" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">close</span><span class="p">()</span></code>
+
+<a href="#baglab.io.Bag.close" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Close the underlying reader.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="baglab.io.explode_array" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">explode_array</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#baglab.io.explode_array" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Expand an array-valued Series into a DataFrame with one column per element.</p>
+<p>Useful for <code>sensor_msgs/JointState</code> fields like <code>position</code>,
+<code>velocity</code>, and <code>effort</code> where each cell contains a list.</p>
+<h5 id="baglab.io.explode_array--parameters">Parameters<a class="headerlink" href="#baglab.io.explode_array--parameters" title="Permanent link">&para;</a></h5>
+<p>series : pd.Series
+    Series whose cells are lists or arrays of equal length.
+names : sequence of str, optional
+    Column names for the resulting DataFrame.  If <em>None</em>, columns are
+    named <code>0, 1, 2, ...</code>.</p>
+<h5 id="baglab.io.explode_array--returns">Returns<a class="headerlink" href="#baglab.io.explode_array--returns" title="Permanent link">&para;</a></h5>
+<p>pd.DataFrame
+    DataFrame with the same index as <em>series</em>.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="baglab.io.clear_cache" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">clear_cache</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></code>
+
+<a href="#baglab.io.clear_cache" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Remove the disk cache for a rosbag.</p>
+<h5 id="baglab.io.clear_cache--parameters">Parameters<a class="headerlink" href="#baglab.io.clear_cache--parameters" title="Permanent link">&para;</a></h5>
+<p>path : str | Path
+    Path to the rosbag directory. Shell notation (<code>~</code>, <code>$VAR</code>) is expanded.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="baglab.io.find_bags" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">find_bags</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span></code>
+
+<a href="#baglab.io.find_bags" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return bag paths matching a glob pattern, sorted by data-file modification time.</p>
+<p>Sorts by the modification time of the actual <code>.db3</code> or <code>.mcap</code> files
+inside each bag directory (oldest first), ignoring cache or metadata
+timestamps.</p>
+<h5 id="baglab.io.find_bags--parameters">Parameters<a class="headerlink" href="#baglab.io.find_bags--parameters" title="Permanent link">&para;</a></h5>
+<p>pattern : str
+    Glob pattern (e.g. <code>"/path/to/log_dir/*"</code>).</p>
+<h5 id="baglab.io.find_bags--returns">Returns<a class="headerlink" href="#baglab.io.find_bags--returns" title="Permanent link">&para;</a></h5>
+<p>list[Path]
+    Matched paths sorted ascending by data-file mtime.
+    Use <code>[-1]</code> for the latest bag.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="baglab.io.has_mcap_backend" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">has_mcap_backend</span><span class="p">()</span></code>
+
+<a href="#baglab.io.has_mcap_backend" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return True if the baglab-mcap acceleration package is installed.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="baglab.io.load" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">topics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">msg_paths</span><span class="o">=</span><span class="p">(),</span> <span class="o">*</span><span class="p">,</span> <span class="n">use_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">)</span></code>
+
+<a href="#baglab.io.load" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Load a rosbag.</p>
+<h5 id="baglab.io.load--parameters">Parameters<a class="headerlink" href="#baglab.io.load--parameters" title="Permanent link">&para;</a></h5>
+<p>path : str | Path
+    Path to the rosbag directory. Shell notation (<code>~</code>, <code>$VAR</code>) is expanded.
+topics : list[str] | dict[str, list[str]] | None
+    If a list of topic names, eagerly preload all fields for those topics
+    in a single pass (fast batch read on mcap backend).
+    If a dict <code>{topic: [fields]}</code>, eagerly load specified fields per topic.
+    If <code>None</code>, return a lazy :class:<code>Bag</code> handle.
+msg_paths : Sequence[str | Path]
+    Directories to scan for <code>.msg</code> files.  Required for db3 bags
+    that use custom message types not included in the standard ROS2
+    type definitions.  Shell notation is expanded.
+use_cache : bool
+    If <code>True</code> (default), use disk cache for loaded DataFrames.
+    Set to <code>False</code> to always read from the bag file directly.
+backend : str
+    Backend to use for reading: <code>"auto"</code> (default), <code>"mcap"</code>,
+    or <code>"rosbags"</code>.</p>
+<h5 id="baglab.io.load--returns">Returns<a class="headerlink" href="#baglab.io.load--returns" title="Permanent link">&para;</a></h5>
+<p>Bag
+    A bag handle. When <em>topics</em> is provided, the requested
+    DataFrames are pre-cached and accessible via <code>bag[topic]</code>.</p>
+<h5 id="baglab.io.load--examples">Examples<a class="headerlink" href="#baglab.io.load--examples" title="Permanent link">&para;</a></h5>
+<p>Lazy loading (topics loaded on first access)::</p>
+<div class="highlight"><pre><span></span><code>bag = baglab.load(&quot;~/rosbags/experiment1&quot;)
+df = bag[&quot;/cmd_vel&quot;]
+</code></pre></div>
+<p>Eager batch preloading::</p>
+<div class="highlight"><pre><span></span><code>bag = baglab.load(&quot;~/rosbags/experiment1&quot;, topics=[&quot;/cmd_vel&quot;, &quot;/odom&quot;])
+</code></pre></div>
+<p>Field-selective loading::</p>
+<div class="highlight"><pre><span></span><code>bag = baglab.load(&quot;path&quot;, topics={&quot;/imu&quot;: [&quot;angular_velocity.x&quot;]})
+</code></pre></div>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="baglab.io.align_origin" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">align_origin</span><span class="p">(</span><span class="o">*</span><span class="n">series</span><span class="p">)</span></code>
+
+<a href="#baglab.io.align_origin" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Shift multiple time series so that the global minimum becomes 0.</p>
+<h5 id="baglab.io.align_origin--parameters">Parameters<a class="headerlink" href="#baglab.io.align_origin--parameters" title="Permanent link">&para;</a></h5>
+<p>*series : pd.Series
+    Time series in absolute seconds (e.g. from :func:<code>stamp_to_sec</code> or
+    :func:<code>recv_time_to_sec</code>).</p>
+<h5 id="baglab.io.align_origin--returns">Returns<a class="headerlink" href="#baglab.io.align_origin--returns" title="Permanent link">&para;</a></h5>
+<p>tuple[pd.Series, ...]
+    Each input series shifted by the same shared origin.</p>
+<h5 id="baglab.io.align_origin--raises">Raises<a class="headerlink" href="#baglab.io.align_origin--raises" title="Permanent link">&para;</a></h5>
+<p>ValueError
+    If no series are provided.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="baglab.io.find_time" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">find_time</span><span class="p">(</span><span class="n">series</span><span class="p">,</span> <span class="n">condition</span><span class="p">)</span></code>
+
+<a href="#baglab.io.find_time" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the relative time of the first element satisfying <em>condition</em>.</p>
+<h5 id="baglab.io.find_time--parameters">Parameters<a class="headerlink" href="#baglab.io.find_time--parameters" title="Permanent link">&para;</a></h5>
+<p>series : pd.Series
+    Series with a DatetimeIndex.
+condition : Callable[[pd.Series], pd.Series]
+    A callable that accepts the Series values and returns a boolean Series.
+    For example <code>lambda x: x &gt;= 0.5</code>.</p>
+<h5 id="baglab.io.find_time--returns">Returns<a class="headerlink" href="#baglab.io.find_time--returns" title="Permanent link">&para;</a></h5>
+<p>float
+    Seconds from <code>series.index[0]</code> to the first matching element.</p>
+<h5 id="baglab.io.find_time--raises">Raises<a class="headerlink" href="#baglab.io.find_time--raises" title="Permanent link">&para;</a></h5>
+<p>ValueError
+    If no element satisfies the condition.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="baglab.io.recv_time_to_sec" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">recv_time_to_sec</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+<a href="#baglab.io.recv_time_to_sec" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Convert the DataFrame DatetimeIndex (rosbag receive time) to float seconds.</p>
+<h5 id="baglab.io.recv_time_to_sec--parameters">Parameters<a class="headerlink" href="#baglab.io.recv_time_to_sec--parameters" title="Permanent link">&para;</a></h5>
+<p>df : pd.DataFrame
+    DataFrame with a DatetimeIndex produced by :func:<code>load</code>.
+relative : bool
+    If True, return time relative to the first message (starting from 0).</p>
+<h5 id="baglab.io.recv_time_to_sec--returns">Returns<a class="headerlink" href="#baglab.io.recv_time_to_sec--returns" title="Permanent link">&para;</a></h5>
+<p>pd.Series
+    Receive timestamp in seconds as float64.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="baglab.io.reindex_by_stamp" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">reindex_by_stamp</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></code>
+
+<a href="#baglab.io.reindex_by_stamp" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Replace index with header.stamp as DatetimeIndex.</p>
+<h5 id="baglab.io.reindex_by_stamp--parameters">Parameters<a class="headerlink" href="#baglab.io.reindex_by_stamp--parameters" title="Permanent link">&para;</a></h5>
+<p>df : pd.DataFrame
+    DataFrame containing <code>header.stamp.sec</code> and <code>header.stamp.nanosec</code> columns.</p>
+<h5 id="baglab.io.reindex_by_stamp--returns">Returns<a class="headerlink" href="#baglab.io.reindex_by_stamp--returns" title="Permanent link">&para;</a></h5>
+<p>pd.DataFrame
+    New DataFrame with publish-time index. Original is not modified.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="baglab.io.stamp_to_sec" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">stamp_to_sec</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">relative</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">stamp</span><span class="o">=</span><span class="s1">&#39;header.stamp&#39;</span><span class="p">)</span></code>
+
+<a href="#baglab.io.stamp_to_sec" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Combine stamp sec and nanosec columns into float seconds.</p>
+<h5 id="baglab.io.stamp_to_sec--parameters">Parameters<a class="headerlink" href="#baglab.io.stamp_to_sec--parameters" title="Permanent link">&para;</a></h5>
+<p>df : pd.DataFrame
+    DataFrame containing <code>{stamp}.sec</code> and <code>{stamp}.nanosec</code> columns.
+relative : bool
+    If True, return time relative to the first message (starting from 0).
+stamp : str
+    Column prefix for the builtin_interfaces/Time field.
+    Default <code>"header.stamp"</code>.</p>
+<h5 id="baglab.io.stamp_to_sec--returns">Returns<a class="headerlink" href="#baglab.io.stamp_to_sec--returns" title="Permanent link">&para;</a></h5>
+<p>pd.Series
+    Timestamp in seconds as float64.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="baglab.io.time_slice" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">time_slice</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">t_start</span><span class="p">,</span> <span class="n">t_end</span><span class="p">)</span></code>
+
+<a href="#baglab.io.time_slice" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Slice a DatetimeIndex DataFrame by relative time in seconds.</p>
+<h5 id="baglab.io.time_slice--parameters">Parameters<a class="headerlink" href="#baglab.io.time_slice--parameters" title="Permanent link">&para;</a></h5>
+<p>df : pd.DataFrame
+    DataFrame with a DatetimeIndex.
+t_start : float
+    Start time in seconds relative to <code>df.index[0]</code>.
+t_end : float
+    End time in seconds relative to <code>df.index[0]</code>.</p>
+<h5 id="baglab.io.time_slice--returns">Returns<a class="headerlink" href="#baglab.io.time_slice--returns" title="Permanent link">&para;</a></h5>
+<p>pd.DataFrame
+    Subset of <em>df</em> within the requested time window.
+    The original DataFrame is not modified.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="baglab.io.register_msg_types" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">register_msg_types</span><span class="p">(</span><span class="n">typestore</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></code>
+
+<a href="#baglab.io.register_msg_types" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Scan <em>path</em> for <code>.msg</code> files and register them in <em>typestore</em>.</p>
+<p>The directory structure must follow the ROS2 convention::</p>
+<div class="highlight"><pre><span></span><code>&lt;pkg_name&gt;/msg/&lt;MsgName&gt;.msg
+</code></pre></div>
+<p>Types already present in <em>typestore</em> are silently skipped.</p>
+<h5 id="baglab.io.register_msg_types--parameters">Parameters<a class="headerlink" href="#baglab.io.register_msg_types--parameters" title="Permanent link">&para;</a></h5>
+<p>typestore : Typestore
+    The rosbags typestore to register types into.
+path : str | Path
+    Root directory to search for <code>.msg</code> files.</p>
+<h5 id="baglab.io.register_msg_types--returns">Returns<a class="headerlink" href="#baglab.io.register_msg_types--returns" title="Permanent link">&para;</a></h5>
+<p>int
+    Number of newly registered types.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
