@@ -1,10 +1,55 @@
 """Tests for baglab.io module."""
 
+import os
+import time
+
 import pandas as pd
 import pytest
 
 import baglab
 from baglab.io import Bag, clear_cache
+
+
+class TestFindBags:
+    """Tests for baglab.find_bags()."""
+
+    def test_finds_test_bag(self, test_bag_path):
+        pattern = str(test_bag_path.parent / "*")
+        results = baglab.find_bags(pattern)
+        assert any(r == test_bag_path for r in results)
+
+    def test_returns_list_of_paths(self, test_bag_path):
+        from pathlib import Path
+
+        pattern = str(test_bag_path.parent / "*")
+        results = baglab.find_bags(pattern)
+        assert isinstance(results, list)
+        assert all(isinstance(p, Path) for p in results)
+
+    def test_sorted_by_data_file_mtime(self, test_bag_path, tmp_path):
+        """Bags should be sorted by data-file mtime, not directory mtime."""
+        import shutil
+
+        # Create two bag copies with controlled data-file mtimes
+        bag_old = tmp_path / "bag_old"
+        bag_new = tmp_path / "bag_new"
+        shutil.copytree(test_bag_path, bag_old)
+        time.sleep(0.05)
+        shutil.copytree(test_bag_path, bag_new)
+
+        # Touch data files in bag_old to make them newer
+        for f in bag_old.iterdir():
+            if f.suffix in (".db3", ".mcap"):
+                f.touch()
+
+        results = baglab.find_bags(str(tmp_path / "*"))
+        bag_names = [r.name for r in results]
+        # bag_new was copied later but bag_old has newer data files
+        assert bag_names.index("bag_new") < bag_names.index("bag_old")
+
+    def test_empty_pattern(self, tmp_path):
+        results = baglab.find_bags(str(tmp_path / "nonexistent_*"))
+        assert results == []
 
 
 class TestLoad:
