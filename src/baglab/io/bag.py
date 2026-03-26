@@ -165,6 +165,42 @@ def _bag_data_files(bag_path: Path) -> list[Path]:
     )
 
 
+def _bag_data_mtime(bag_path: Path) -> float:
+    """Return the newest mtime among data files (.db3/.mcap) in a bag directory."""
+    data_files = _bag_data_files(bag_path)
+    if data_files:
+        return max(f.stat().st_mtime for f in data_files)
+    return bag_path.stat().st_mtime
+
+
+def find_bags(pattern: str) -> list[Path]:
+    """Return bag paths matching a glob pattern, sorted by data-file modification time.
+
+    Sorts by the modification time of the actual ``.db3`` or ``.mcap`` files
+    inside each bag directory (oldest first), ignoring cache or metadata
+    timestamps.
+
+    Parameters
+    ----------
+    pattern : str
+        Glob pattern (e.g. ``"/path/to/log_dir/*"``).
+
+    Returns
+    -------
+    list[Path]
+        Matched paths sorted ascending by data-file mtime.
+        Use ``[-1]`` for the latest bag.
+    """
+    from glob import glob as _glob
+
+    paths = [
+        Path(p) for p in _glob(pattern)
+        if Path(p).is_dir() and _bag_data_files(Path(p))
+    ]
+    paths.sort(key=_bag_data_mtime)
+    return paths
+
+
 def _compute_fingerprint(bag_path: Path) -> dict[str, dict]:
     """Compute fingerprint of bag data files for cache invalidation."""
     result = {}
